@@ -1,0 +1,83 @@
+$kind: http-request
+name: GET Report by ID
+description: Retrieve a single dengue report by its ID
+method: GET
+url: '{{baseUrl}}/api/reports/:id'
+order: 2000
+pathVariables:
+  - key: id
+    value: '{{createdReportId}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const jsonData = pm.response.json();
+
+      // 1. Status code
+      pm.test("Status code is 200 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 404]);
+      });
+
+      // 2. Response time
+      pm.test("Response time is under 2000ms", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+
+      // 3. Wrapper always present
+      pm.test("Response always has success, message, data fields", function () {
+          pm.expect(jsonData).to.have.property('success');
+          pm.expect(jsonData).to.have.property('message').that.is.a('string');
+          pm.expect(jsonData).to.have.property('data');
+      });
+
+      if (pm.response.code === 200) {
+          // 4. success is true on 200
+          pm.test("success is true on 200", function () {
+              pm.expect(jsonData.success).to.be.true;
+          });
+
+          // 5. Correct message
+          pm.test("Message is 'Report fetched successfully'", function () {
+              pm.expect(jsonData.message).to.eql('Report fetched successfully');
+          });
+
+          // 6. data has all model fields
+          pm.test("data has all required model fields", function () {
+              pm.expect(jsonData.data).to.have.property('id').that.is.a('number');
+              pm.expect(jsonData.data).to.have.property('location').that.is.a('string');
+              pm.expect(jsonData.data).to.have.property('cases').that.is.a('number');
+              pm.expect(jsonData.data).to.have.property('notes');
+              pm.expect(jsonData.data).to.have.property('latitude');
+              pm.expect(jsonData.data).to.have.property('longitude');
+              pm.expect(jsonData.data).to.have.property('createdAt');
+              pm.expect(jsonData.data).to.have.property('updatedAt');
+          });
+
+          // 7. ID matches the requested ID
+          pm.test("Returned report ID matches requested ID", function () {
+              const requestedId = parseInt(pm.request.url.variables.get('id') || pm.environment.get('createdReportId'));
+              pm.expect(jsonData.data.id).to.eql(requestedId);
+          });
+
+          // 8. cases is non-negative
+          pm.test("cases is a non-negative integer", function () {
+              pm.expect(jsonData.data.cases).to.be.at.least(0);
+          });
+      }
+
+      if (pm.response.code === 404) {
+          // 9. success is false on 404
+          pm.test("success is false on 404", function () {
+              pm.expect(jsonData.success).to.be.false;
+          });
+
+          // 10. Correct 404 message
+          pm.test("Message is 'Report not found'", function () {
+              pm.expect(jsonData.message).to.eql('Report not found');
+          });
+
+          // 11. data is null on 404
+          pm.test("data is null on 404", function () {
+              pm.expect(jsonData.data).to.be.null;
+          });
+      }

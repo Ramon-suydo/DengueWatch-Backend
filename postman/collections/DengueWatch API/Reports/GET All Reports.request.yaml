@@ -1,0 +1,73 @@
+$kind: http-request
+name: GET All Reports
+description: Retrieve all dengue reports ordered by creation date (DESC)
+method: GET
+url: '{{baseUrl}}/api/reports'
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const jsonData = pm.response.json();
+
+      // 1. Status code
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      // 2. Response time
+      pm.test("Response time is under 2000ms", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+
+      // 3. Wrapper shape
+      pm.test("Response has success wrapper { success, message, data }", function () {
+          pm.expect(jsonData).to.have.property('success', true);
+          pm.expect(jsonData).to.have.property('message').that.is.a('string');
+          pm.expect(jsonData).to.have.property('data');
+      });
+
+      // 4. data is an array
+      pm.test("data is an array", function () {
+          pm.expect(jsonData.data).to.be.an('array');
+      });
+
+      // 5. Each report has all model fields
+      pm.test("Each report has required model fields", function () {
+          if (jsonData.data.length > 0) {
+              jsonData.data.forEach(function (report) {
+                  pm.expect(report).to.have.property('id').that.is.a('number');
+                  pm.expect(report).to.have.property('location').that.is.a('string');
+                  pm.expect(report).to.have.property('cases').that.is.a('number');
+                  pm.expect(report).to.have.property('notes');
+                  pm.expect(report).to.have.property('latitude');
+                  pm.expect(report).to.have.property('longitude');
+                  pm.expect(report).to.have.property('createdAt');
+                  pm.expect(report).to.have.property('updatedAt');
+              });
+          }
+      });
+
+      // 6. Ordered by createdAt DESC
+      pm.test("Reports are ordered newest first (createdAt DESC)", function () {
+          if (jsonData.data.length > 1) {
+              for (let i = 0; i < jsonData.data.length - 1; i++) {
+                  const current = new Date(jsonData.data[i].createdAt).getTime();
+                  const next    = new Date(jsonData.data[i + 1].createdAt).getTime();
+                  pm.expect(current).to.be.at.least(next);
+              }
+          }
+      });
+
+      // 7. cases is non-negative on every record
+      pm.test("cases is a non-negative integer on every report", function () {
+          jsonData.data.forEach(function (report) {
+              pm.expect(report.cases).to.be.a('number');
+              pm.expect(report.cases).to.be.at.least(0);
+          });
+      });
+
+      // 8. Correct success message
+      pm.test("Message is 'Reports fetched successfully'", function () {
+          pm.expect(jsonData.message).to.eql('Reports fetched successfully');
+      });

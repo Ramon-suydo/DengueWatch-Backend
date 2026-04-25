@@ -1,0 +1,91 @@
+$kind: http-request
+name: POST Create Report
+description: Create a new dengue report
+method: POST
+url: '{{baseUrl}}/api/reports'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "location": "Manila",
+      "cases": 15,
+      "notes": "Cluster near barangay hall",
+      "latitude": 14.5995,
+      "longitude": 120.9842
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const jsonData = pm.response.json();
+
+      // 1. Status code
+      pm.test("Status code is 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+      // 2. Response time
+      pm.test("Response time is under 2000ms", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+
+      // 3. Wrapper shape
+      pm.test("Response has success wrapper { success, message, data }", function () {
+          pm.expect(jsonData).to.have.property('success', true);
+          pm.expect(jsonData).to.have.property('message').that.is.a('string');
+          pm.expect(jsonData).to.have.property('data');
+      });
+
+      // 4. Correct message
+      pm.test("Message is 'Report created successfully'", function () {
+          pm.expect(jsonData.message).to.eql('Report created successfully');
+      });
+
+      // 5. data has all model fields
+      pm.test("data has all required model fields", function () {
+          pm.expect(jsonData.data).to.have.property('id').that.is.a('number');
+          pm.expect(jsonData.data).to.have.property('location').that.is.a('string');
+          pm.expect(jsonData.data).to.have.property('cases').that.is.a('number');
+          pm.expect(jsonData.data).to.have.property('notes');
+          pm.expect(jsonData.data).to.have.property('latitude');
+          pm.expect(jsonData.data).to.have.property('longitude');
+          pm.expect(jsonData.data).to.have.property('createdAt');
+          pm.expect(jsonData.data).to.have.property('updatedAt');
+      });
+
+      // 6. Persisted values match sent values
+      pm.test("location matches sent value 'Manila'", function () {
+          pm.expect(jsonData.data.location).to.eql('Manila');
+      });
+
+      pm.test("cases matches sent value 15", function () {
+          pm.expect(jsonData.data.cases).to.eql(15);
+      });
+
+      pm.test("notes matches sent value", function () {
+          pm.expect(jsonData.data.notes).to.eql('Cluster near barangay hall');
+      });
+
+      pm.test("latitude matches sent value 14.5995", function () {
+          pm.expect(jsonData.data.latitude).to.be.closeTo(14.5995, 0.0001);
+      });
+
+      pm.test("longitude matches sent value 120.9842", function () {
+          pm.expect(jsonData.data.longitude).to.be.closeTo(120.9842, 0.0001);
+      });
+
+      // 7. ID is a positive integer
+      pm.test("ID is a positive integer", function () {
+          pm.expect(jsonData.data.id).to.be.a('number');
+          pm.expect(jsonData.data.id).to.be.above(0);
+      });
+
+      // 8. Save createdReportId for chained requests
+      if (jsonData.data && jsonData.data.id) {
+          pm.environment.set('createdReportId', jsonData.data.id);
+          console.log('Saved createdReportId:', jsonData.data.id);
+      }

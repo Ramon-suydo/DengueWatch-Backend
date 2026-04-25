@@ -1,0 +1,7 @@
+$kind: collection
+name: DengueWatch API
+description: API collection for DengueWatch Backend - Dengue monitoring and reporting system
+variables:
+  - key: baseUrl
+    value: 'http://localhost:3000'
+    description: Base URL for the DengueWatch API

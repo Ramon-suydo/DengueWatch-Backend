@@ -1,0 +1,106 @@
+$kind: http-request
+name: PUT Update Report
+description: Update an existing dengue report
+method: PUT
+url: '{{baseUrl}}/api/reports/:id'
+order: 4000
+pathVariables:
+  - key: id
+    value: '{{createdReportId}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "location": "Quezon City",
+      "cases": 30,
+      "notes": "Updated case count after re-survey",
+      "latitude": 14.6760,
+      "longitude": 121.0437
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const jsonData = pm.response.json();
+
+      // 1. Status code
+      pm.test("Status code is 200 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 404]);
+      });
+
+      // 2. Response time
+      pm.test("Response time is under 2000ms", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+
+      // 3. Wrapper always present
+      pm.test("Response always has success, message, data fields", function () {
+          pm.expect(jsonData).to.have.property('success');
+          pm.expect(jsonData).to.have.property('message').that.is.a('string');
+          pm.expect(jsonData).to.have.property('data');
+      });
+
+      if (pm.response.code === 200) {
+          // 4. success is true on 200
+          pm.test("success is true on 200", function () {
+              pm.expect(jsonData.success).to.be.true;
+          });
+
+          // 5. Correct message
+          pm.test("Message is 'Report updated successfully'", function () {
+              pm.expect(jsonData.message).to.eql('Report updated successfully');
+          });
+
+          // 6. data has all model fields
+          pm.test("data has all required model fields", function () {
+              pm.expect(jsonData.data).to.have.property('id').that.is.a('number');
+              pm.expect(jsonData.data).to.have.property('location').that.is.a('string');
+              pm.expect(jsonData.data).to.have.property('cases').that.is.a('number');
+              pm.expect(jsonData.data).to.have.property('notes');
+              pm.expect(jsonData.data).to.have.property('latitude');
+              pm.expect(jsonData.data).to.have.property('longitude');
+              pm.expect(jsonData.data).to.have.property('createdAt');
+              pm.expect(jsonData.data).to.have.property('updatedAt');
+          });
+
+          // 7. Updated values match sent values
+          pm.test("location updated to 'Quezon City'", function () {
+              pm.expect(jsonData.data.location).to.eql('Quezon City');
+          });
+
+          pm.test("cases updated to 30", function () {
+              pm.expect(jsonData.data.cases).to.eql(30);
+          });
+
+          pm.test("notes updated correctly", function () {
+              pm.expect(jsonData.data.notes).to.eql('Updated case count after re-survey');
+          });
+
+          pm.test("latitude updated to 14.6760", function () {
+              pm.expect(jsonData.data.latitude).to.be.closeTo(14.6760, 0.0001);
+          });
+
+          pm.test("longitude updated to 121.0437", function () {
+              pm.expect(jsonData.data.longitude).to.be.closeTo(121.0437, 0.0001);
+          });
+      }
+
+      if (pm.response.code === 404) {
+          // 8. success is false on 404
+          pm.test("success is false on 404", function () {
+              pm.expect(jsonData.success).to.be.false;
+          });
+
+          // 9. Correct 404 message
+          pm.test("Message is 'Report not found'", function () {
+              pm.expect(jsonData.message).to.eql('Report not found');
+          });
+
+          // 10. data is null on 404
+          pm.test("data is null on 404", function () {
+              pm.expect(jsonData.data).to.be.null;
+          });
+      }

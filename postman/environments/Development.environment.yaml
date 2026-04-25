@@ -1,0 +1,5 @@
+name: Development
+values:
+  - key: baseUrl
+    enabled: true
+    value: 'http://localhost:3001'
