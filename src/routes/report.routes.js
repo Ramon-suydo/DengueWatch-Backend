@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/report.controller');
 const { validateReport } = require('../middleware/validate');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorizeAdmin } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -10,8 +10,6 @@ const { authenticate } = require('../middleware/auth');
  *   get:
  *     summary: Get all reports with pagination and filters
  *     tags: [Reports]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -41,10 +39,8 @@ const { authenticate } = require('../middleware/auth');
  *     responses:
  *       200:
  *         description: Reports fetched successfully
- *       401:
- *         description: Unauthorized
  */
-router.get('/', authenticate, controller.getAllReports);
+router.get('/', controller.getAllReports);
 
 /**
  * @swagger
@@ -52,8 +48,6 @@ router.get('/', authenticate, controller.getAllReports);
  *   get:
  *     summary: Get a report by ID
  *     tags: [Reports]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -66,13 +60,13 @@ router.get('/', authenticate, controller.getAllReports);
  *       404:
  *         description: Report not found
  */
-router.get('/:id', authenticate, controller.getReportById);
+router.get('/:id', controller.getReportById);
 
 /**
  * @swagger
  * /api/reports:
  *   post:
- *     summary: Create a new report
+ *     summary: Create a new report (Admin only)
  *     tags: [Reports]
  *     security:
  *       - bearerAuth: []
@@ -99,14 +93,16 @@ router.get('/:id', authenticate, controller.getReportById);
  *         description: Report created successfully
  *       400:
  *         description: Validation error
+ *       403:
+ *         description: Admins only
  */
-router.post('/', authenticate, validateReport, controller.createReport);
+router.post('/', authenticate, authorizeAdmin, validateReport, controller.createReport);
 
 /**
  * @swagger
  * /api/reports/{id}:
  *   put:
- *     summary: Update a report
+ *     summary: Update a report (Admin only)
  *     tags: [Reports]
  *     security:
  *       - bearerAuth: []
@@ -121,14 +117,16 @@ router.post('/', authenticate, validateReport, controller.createReport);
  *         description: Report updated successfully
  *       404:
  *         description: Report not found
+ *       403:
+ *         description: Admins only
  */
-router.put('/:id', authenticate, validateReport, controller.updateReport);
+router.put('/:id', authenticate, authorizeAdmin, validateReport, controller.updateReport);
 
 /**
  * @swagger
  * /api/reports/{id}:
  *   delete:
- *     summary: Soft delete a report
+ *     summary: Soft delete a report (Admin only)
  *     tags: [Reports]
  *     security:
  *       - bearerAuth: []
@@ -143,7 +141,9 @@ router.put('/:id', authenticate, validateReport, controller.updateReport);
  *         description: Report deleted successfully
  *       404:
  *         description: Report not found
+ *       403:
+ *         description: Admins only
  */
-router.delete('/:id', authenticate, controller.deleteReport);
+router.delete('/:id', authenticate, authorizeAdmin, controller.deleteReport);
 
 module.exports = router;

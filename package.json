@@ -4,12 +4,14 @@
   "description": "DengueWatch Backend API - Disease monitoring and reporting system",
   "main": "src/server.js",
   "type": "commonjs",
-  "scripts": {
+"scripts": {
     "dev": "nodemon",
     "start": "node src/server.js",
+    "seed:admin": "node src/seeders/adminSeeder.js",
+    "seed:dengue": "node src/seeders/dengueDataSeeder.js",
     "test": "echo \"No tests yet\"",
     "lint": "echo \"Add ESLint later\""
-  },
+},
   "keywords": [
     "dengue",
     "health",
@@ -38,4 +40,5 @@
   "devDependencies": {
     "nodemon": "^3.1.14"
   }
+  
 }

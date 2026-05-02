@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const analyticsController = require('../controllers/analytics.controller');
-const { authenticate } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -9,13 +8,11 @@ const { authenticate } = require('../middleware/auth');
  *   get:
  *     summary: Get overall summary statistics
  *     tags: [Analytics]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Summary fetched successfully
  */
-router.get('/summary', authenticate, analyticsController.getSummary);
+router.get('/summary', analyticsController.getSummary);
 
 /**
  * @swagger
@@ -23,13 +20,11 @@ router.get('/summary', authenticate, analyticsController.getSummary);
  *   get:
  *     summary: Get total cases grouped by location
  *     tags: [Analytics]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Cases by location fetched successfully
  */
-router.get('/by-location', authenticate, analyticsController.getCasesByLocation);
+router.get('/by-location', analyticsController.getCasesByLocation);
 
 /**
  * @swagger
@@ -37,13 +32,11 @@ router.get('/by-location', authenticate, analyticsController.getCasesByLocation)
  *   get:
  *     summary: Get cases over time (monthly)
  *     tags: [Analytics]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Cases over time fetched successfully
  */
-router.get('/over-time', authenticate, analyticsController.getCasesOverTime);
+router.get('/over-time', analyticsController.getCasesOverTime);
 
 /**
  * @swagger
@@ -51,8 +44,6 @@ router.get('/over-time', authenticate, analyticsController.getCasesOverTime);
  *   get:
  *     summary: Get dengue hotspots
  *     tags: [Analytics]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: threshold
@@ -63,6 +54,6 @@ router.get('/over-time', authenticate, analyticsController.getCasesOverTime);
  *       200:
  *         description: Hotspots fetched successfully
  */
-router.get('/hotspots', authenticate, analyticsController.getHotspots);
+router.get('/hotspots', analyticsController.getHotspots);
 
 module.exports = router;
