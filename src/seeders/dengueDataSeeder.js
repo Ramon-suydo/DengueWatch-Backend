@@ -4,39 +4,15 @@ const Report = require('../models/report.model');
 
 // Tondo barangay coordinates and population weights
 // Based on actual Tondo, Manila barangay locations
-const tondoBarangays = [
-  { name: 'Barangay 1', lat: 14.6177, lng: 120.9686, weight: 0.8 },
-  { name: 'Barangay 2', lat: 14.6189, lng: 120.9692, weight: 0.9 },
-  { name: 'Barangay 3', lat: 14.6201, lng: 120.9698, weight: 0.7 },
-  { name: 'Barangay 4', lat: 14.6213, lng: 120.9704, weight: 1.0 },
-  { name: 'Barangay 5', lat: 14.6225, lng: 120.9710, weight: 0.6 },
-  { name: 'Barangay 6', lat: 14.6237, lng: 120.9716, weight: 0.8 },
-  { name: 'Barangay 7', lat: 14.6249, lng: 120.9722, weight: 0.9 },
-  { name: 'Barangay 8', lat: 14.6261, lng: 120.9728, weight: 0.7 },
-  { name: 'Barangay 9', lat: 14.6273, lng: 120.9734, weight: 1.0 },
-  { name: 'Barangay 10', lat: 14.6285, lng: 120.9740, weight: 0.8 },
-  { name: 'Barangay 11', lat: 14.6150, lng: 120.9678, weight: 0.9 },
-  { name: 'Barangay 12', lat: 14.6162, lng: 120.9684, weight: 0.7 },
-  { name: 'Barangay 13', lat: 14.6174, lng: 120.9690, weight: 0.8 },
-  { name: 'Barangay 14', lat: 14.6186, lng: 120.9696, weight: 1.0 },
-  { name: 'Barangay 15', lat: 14.6198, lng: 120.9702, weight: 0.6 },
-  { name: 'Barangay 16', lat: 14.6210, lng: 120.9708, weight: 0.9 },
-  { name: 'Barangay 17', lat: 14.6222, lng: 120.9714, weight: 0.7 },
-  { name: 'Barangay 18', lat: 14.6234, lng: 120.9720, weight: 0.8 },
-  { name: 'Barangay 19', lat: 14.6246, lng: 120.9726, weight: 1.0 },
-  { name: 'Barangay 20', lat: 14.6258, lng: 120.9732, weight: 0.9 },
-  { name: 'Barangay 21', lat: 14.6123, lng: 120.9670, weight: 0.8 },
-  { name: 'Barangay 22', lat: 14.6135, lng: 120.9676, weight: 0.7 },
-  { name: 'Barangay 23', lat: 14.6147, lng: 120.9682, weight: 0.9 },
-  { name: 'Barangay 24', lat: 14.6159, lng: 120.9688, weight: 1.0 },
-  { name: 'Barangay 25', lat: 14.6171, lng: 120.9694, weight: 0.6 },
-  { name: 'Barangay 26', lat: 14.6183, lng: 120.9700, weight: 0.8 },
-  { name: 'Barangay 27', lat: 14.6195, lng: 120.9706, weight: 0.7 },
-  { name: 'Barangay 28', lat: 14.6207, lng: 120.9712, weight: 0.9 },
-  { name: 'Barangay 29', lat: 14.6219, lng: 120.9718, weight: 1.0 },
-  { name: 'Barangay 30', lat: 14.6231, lng: 120.9724, weight: 0.8 },
-];
-
+const tondoBarangays = [];
+for (let i = 1; i <= 105; i++) {
+    tondoBarangays.push({
+        name: `Barangay ${i}`,
+        lat: 14.6177 + (i * 0.0012),
+        lng: 120.9686 + (i * 0.0008),
+        weight: 0.5 + (Math.random() * 0.5)
+    });
+}
 // Monthly dengue data based on NCR/Manila patterns
 // Peak season: June-November in Philippines
 const monthlyData = [

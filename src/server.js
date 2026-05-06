@@ -13,6 +13,8 @@ const errorHandler = require('./middleware/errorHandler');
 const { developmentLogger, productionLogger } = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
+const predictionRoutes = require('./routes/prediction.routes');
+const DengueCase = require('./models/dengueCase.model');
 
 // Security: HTTP Headers
 app.use(helmet());
@@ -48,7 +50,13 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/reports', reportRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/analytics', analyticsRoutes);
-
+app.use('/api/prediction', predictionRoutes);
+app.get('/debug/dengue', async (req, res) => {
+    const DengueCase = require('./models/dengueCase.model');
+    const count = await DengueCase.count();
+    const sample = await DengueCase.findAll({ limit: 3 });
+    res.json({ count, sample });
+});
 // Error Handler
 app.use(errorHandler);
 
